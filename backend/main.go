@@ -4,6 +4,6 @@ import . "lms/utils"
 
 func main() {
 
-	Log("Hello World!")
+	Log("TEST", "Hello World!")
 
 }
