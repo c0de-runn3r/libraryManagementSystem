@@ -10,7 +10,7 @@ import (
 func GetFilenameDate() string {
 	const layout = "02-01-2006"
 	t := time.Now()
-	return t.Format(layout) + ".log"
+	return os.Getenv("LOG_PATH") + "/" + t.Format(layout) + ".log"
 }
 
 func checkLevel(level string) bool {
@@ -33,25 +33,29 @@ func checkLevel(level string) bool {
 		}
 	case "disabled":
 		return false
+	default:
+		fmt.Println("Inappropriate logger level!")
+		return false
 	}
 	return false
 }
 
 func Log(level string, message string) {
+	if len(message) == 0 {
+		fmt.Println("Log message is null")
+	}
 	if checkLevel(level) == true {
 		const layout = "15:04:05"
 		StringToLog := fmt.Sprintf("(%v) [%s] %s\n", time.Now().Format(layout), strings.ToUpper(level), message)
-		os.Chdir(os.Getenv("LOG_PATH"))
 		file, err := os.OpenFile(GetFilenameDate(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
-			var errorHanlde string = fmt.Sprintf("Problem occured when creating a file. %s", err)
-			Log("error", errorHanlde)
+			fmt.Printf("Problem occured when creating a file. %s\n", err)
 		} else {
 			file.WriteString(StringToLog)
 			file.Close()
 		}
 		if os.Getenv("SILENT_LOG") == "false" {
-			print(StringToLog)
+			fmt.Printf(StringToLog)
 		}
 	}
 }
