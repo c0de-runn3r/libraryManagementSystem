@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -13,38 +14,44 @@ func GetFilenameDate() string {
 	return os.Getenv("LOG_PATH") + "/" + t.Format(layout) + ".log"
 }
 
-func checkLevel(level string) bool {
+func checkLevel(level string) (bool, error) {
 	switch os.Getenv("LOG_LEVEL") {
 	case "error":
 		if level == "error" {
-			return true
+			return true, nil
 		}
 	case "warning":
 		if level == "error" || level == "warning" {
-			return true
+			return true, nil
 		}
 	case "info":
 		if level == "error" || level == "warning" || level == "info" {
-			return true
+			return true, nil
 		}
 	case "debug":
 		if level == "error" || level == "warning" || level == "info" || level == "debug" {
-			return true
+			return true, nil
 		}
 	case "disabled":
-		return false
+		return false, nil
 	default:
-		fmt.Println("Inappropriate logger level!")
-		return false
+		err := errors.New("Inappropriate environment variable 'LOG_LEVEL'")
+		return false, err
 	}
-	return false
+	return false, nil
 }
 
 func Log(level string, message string) {
 	if len(message) == 0 {
-		fmt.Println("Log message is null")
+		fmt.Println("Log error. The message string is empty.")
+		return
 	}
-	if checkLevel(level) == true {
+	lvl, err := checkLevel(level)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if lvl == true {
 		const layout = "15:04:05"
 		StringToLog := fmt.Sprintf("(%v) [%s] %s\n", time.Now().Format(layout), strings.ToUpper(level), message)
 		file, err := os.OpenFile(GetFilenameDate(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
