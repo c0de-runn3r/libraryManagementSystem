@@ -67,6 +67,8 @@ func Log(level string, message string) {
 		}
 		if os.Getenv("SILENT_LOG") == "false" {
 			fmt.Printf(StringToLog)
+		} else if os.Getenv("SILENT_LOG") != "true" && os.Getenv("SILENT_LOG") != "false" {
+			fmt.Println(errors.New("Inappropriate environment variable 'SILENT_LOG'"))
 		}
 	}
 }
