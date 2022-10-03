@@ -42,6 +42,10 @@ func checkLevel(level string) (bool, error) {
 }
 
 func Log(level string, message string) {
+	if level != "error" && level != "warning" && level != "info" && level != "debug" {
+		fmt.Println(errors.New("Inappropriate argument in Log func. Incorrect log level."))
+		return
+	}
 	if len(message) == 0 {
 		fmt.Println("Log error. The message string is empty.")
 		return
