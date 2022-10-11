@@ -1,4 +1,4 @@
-CREATE TABLE "users"
+CREATE TABLE IF NOT EXISTS "users"
 (
     "id" CHAR NOT NULL PRIMARY KEY,
     "email" VARCHAR NOT NULL 
@@ -6,7 +6,7 @@ CREATE TABLE "users"
     "roles" VARCHAR NOT NULL
 );
 
-CREATE TABLE "books"
+CREATE TABLE IF NOT EXISTS "books"
 (
     "title" VARCHAR NOT NULL PRIMARY KEY,
     "authors" VARCHAR,
