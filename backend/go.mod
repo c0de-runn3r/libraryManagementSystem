@@ -8,12 +8,14 @@ replace lms/utils => ./utils
 
 replace lms/controllers => ./controllers
 
-require lms/utils v0.0.0-00010101000000-000000000000
-
-require github.com/joho/godotenv v1.4.0 // indirect
+require (
+	github.com/joho/godotenv v1.4.0
+	github.com/labstack/echo v3.3.10+incompatible
+	lms/controllers v0.0.0-00010101000000-000000000000
+	lms/utils v0.0.0-00010101000000-000000000000
+)
 
 require (
-	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
@@ -23,5 +25,4 @@ require (
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/sys v0.0.0-20211103235746-7861aae1554b // indirect
 	golang.org/x/text v0.3.7 // indirect
-	lms/controllers v0.0.0-00010101000000-000000000000
 )
