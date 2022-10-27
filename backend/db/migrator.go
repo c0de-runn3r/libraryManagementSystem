@@ -16,9 +16,11 @@ func Migrate(db *gorm.DB) {
 	err := db.AutoMigrate(&User{})
 
 	if err != nil {
-		Log("error", "Migration error.\n"+err.Error())
+		Log("error", "User migration error.\n"+err.Error())
 		os.Exit(1)
 	}
+
+	// TODO добав міграцію моделей, бо толку від них немає
 
 	Log("info", "Auto migration compleate.")
 

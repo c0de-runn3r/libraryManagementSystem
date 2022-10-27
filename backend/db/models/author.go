@@ -1,3 +1,4 @@
+// TODO повістю неправильний файл
 package models
 
 import "gorm.io/gorm"
