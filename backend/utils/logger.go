@@ -44,15 +44,18 @@ func checkLevel(level string) (bool, error) {
 func Log(level string, message string) {
 	if level != "error" && level != "warning" && level != "info" && level != "debug" {
 		fmt.Println(errors.New("Inappropriate argument in Log func. Incorrect log level."))
+		os.Exit(1)
 		return
 	}
 	if len(message) == 0 {
 		fmt.Println("Log error. The message string is empty.")
+		os.Exit(1)
 		return
 	}
 	lvl, err := checkLevel(level)
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(1)
 		return
 	}
 	if lvl == true {
@@ -65,10 +68,12 @@ func Log(level string, message string) {
 			file.WriteString(StringToLog)
 			file.Close()
 		}
-		if os.Getenv("SILENT_LOG") == "false" {
+		silentLog := os.Getenv("SILENT_LOG")
+		if silentLog == "false" || silentLog == "" {
 			fmt.Printf(StringToLog)
-		} else if os.Getenv("SILENT_LOG") != "true" && os.Getenv("SILENT_LOG") != "false" {
+		} else if os.Getenv("SILENT_LOG") != "true" {
 			fmt.Println(errors.New("Inappropriate environment variable 'SILENT_LOG'"))
+			os.Exit(1)
 		}
 	}
 }
