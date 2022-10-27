@@ -14,3 +14,7 @@ Go bin path:
 - MacOs: `/Users/<username>/go/bin`
 
 Type `air` command at project root directory.
+
+## Migrating
+
+Migrations will start automatically if env variable `MIGRATE` is set to `true`.
