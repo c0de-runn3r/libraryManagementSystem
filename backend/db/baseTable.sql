@@ -10,12 +10,12 @@ CREATE TABLE IF NOT EXISTS "books"
 (
     "title" VARCHAR NOT NULL PRIMARY KEY,
     "authors" VARCHAR,
+    "genres" TEXT,
     "publisher" VARCHAR,
     "year" YEAR,
     "ISBN" VARCHAR (13),
-    "other_cordes" TEXT,
-    "page_count" INT,
-    "genres" TEXT
+    "UDK_number" TEXT,
+    "page_count" INT
 );
 
 CREATE TABLE IF NOT EXISTS "authors"
