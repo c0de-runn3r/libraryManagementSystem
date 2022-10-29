@@ -3,7 +3,7 @@ package models
 
 import "gorm.io/gorm"
 
-type Book struct {
-	Author string `gorm:"not null"`
+type Author struct {
+	Name string `gorm:"not null"`
 	gorm.Model
 }

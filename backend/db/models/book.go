@@ -1,16 +1,18 @@
 // TODO Other_cordes заміни на ті коди, які вам тре. І не cordes, а codes.
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Book struct {
-	Title        string `gorm:"not null"`
-	Authors      string `gorm:"not null"`
-	Publisher    string `gorm:"not null"`
-	Year         string `gorm:"not null"`
-	ISBN         string `gorm:"not null;unique"`
-	Other_cordes string `gorm:"not null"`
-	Page_count   string `gorm:"not null"`
-	Genres       string `gorm:"not null"`
+	Title      string `gorm:"not null;unique"`
+	Authors    string
+	Genres     string
+	Publisher  string
+	Year       string
+	ISBN       string
+	UDK_number string
+	Page_count int
 	gorm.Model
 }
