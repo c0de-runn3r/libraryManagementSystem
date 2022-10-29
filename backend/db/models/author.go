@@ -4,6 +4,6 @@ package models
 import "gorm.io/gorm"
 
 type Author struct {
-	Author string `gorm:"not null"`
+	Name string `gorm:"not null"`
 	gorm.Model
 }
