@@ -13,20 +13,19 @@ func Migrate(db *gorm.DB) {
 
 	Log("info", "Auto migration starts...")
 
-	err_user := db.AutoMigrate(&User{})
-	err_book := db.AutoMigrate(&Book{})
-	err_author := db.AutoMigrate(&Author{})
-
-	if err_user != nil {
-		Log("error", "User migration error.\n"+err_user.Error())
+	err := db.AutoMigrate(&User{})
+	if err != nil {
+		Log("error", "User migration error.\n"+err.Error())
 		os.Exit(1)
 	}
-	if err_book != nil {
-		Log("error", "Book migration error.\n"+err_book.Error())
+	err = db.AutoMigrate(&Book{})
+	if err != nil {
+		Log("error", "Book migration error.\n"+err.Error())
 		os.Exit(1)
 	}
-	if err_author != nil {
-		Log("error", "Author migration error.\n"+err_author.Error())
+	err = db.AutoMigrate(&Author{})
+	if err != nil {
+		Log("error", "Author migration error.\n"+err.Error())
 		os.Exit(1)
 	}
 
