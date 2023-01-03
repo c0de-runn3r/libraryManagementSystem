@@ -9,6 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -41,11 +42,12 @@ func main() {
 	}
 
 	e := echo.New()
+	e.HideBanner = true
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{AllowCredentials: true}))
 
 	apiGroup := e.Group("/api")
 
 	usersGroup := apiGroup.Group("/users")
-
 	booksGroup := apiGroup.Group("/books")
 
 	AttachUsersController(usersGroup, db)
