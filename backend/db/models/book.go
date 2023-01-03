@@ -5,8 +5,8 @@ import (
 )
 
 type Book struct {
-	Title     string `gorm:"not null;unique"`
-	Authors   string
+	Title     string    `gorm:"not null;unique"`
+	Authors   []*Author `gorm:"many2many:author_books;"`
 	Genres    string
 	Publisher string
 	Year      string
