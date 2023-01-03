@@ -9,7 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +25,9 @@ func main() {
 
 	Log("info", "Connecting to database...")
 
-	db, err := gorm.Open(mysql.Open(os.Getenv("SQL_DSN")), &gorm.Config{})
+	sqlDNS := os.Getenv("SQL_DNS")
+
+	db, err := gorm.Open(postgres.Open(sqlDNS), &gorm.Config{})
 
 	if err != nil {
 		Log("error", "Can't Connect to database.\n"+err.Error())
