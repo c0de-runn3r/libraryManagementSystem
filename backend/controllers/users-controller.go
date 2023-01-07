@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	. "lms/utils"
 	"net/http"
 	"os"
@@ -67,14 +68,12 @@ func handleGetUser(c echo.Context) error {
 func handleRegister(c echo.Context) error {
 	database := c.Get(dbContextKey).(*gorm.DB)
 
-	password, _ := bcrypt.GenerateFromPassword([]byte(c.FormValue("password")), 14)
+	user := new(models.User)
+	json.NewDecoder(c.Request().Body).Decode(&user)
 
-	user := models.User{
-		Name:     c.FormValue("name"),
-		Surname:  c.FormValue("surname"),
-		Email:    c.FormValue("email"),
-		Password: password,
-	}
+	password, _ := bcrypt.GenerateFromPassword(user.Password, 14)
+
+	user.Password = password
 
 	database.Create(&user)
 
@@ -84,16 +83,18 @@ func handleRegister(c echo.Context) error {
 
 func handleLogin(c echo.Context) error {
 	database := c.Get(dbContextKey).(*gorm.DB)
-	user := models.User{
-		Email: c.FormValue("email"),
-	}
 
-	database.Where("email = ?", user.Email).First(&user)
+	data := new(models.User)
+	json.NewDecoder(c.Request().Body).Decode(&data)
+
+	user := new(models.User)
+
+	database.Where("email = ?", data.Email).First(&user)
 	if user.ID == 0 { //If the ID return is '0' then there is no such email present in the DB
 		Log("info", "could not login: user not found")
 		return c.JSON(http.StatusNotFound, "user not found")
 	}
-	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(c.FormValue("password"))); err != nil {
+	if err := bcrypt.CompareHashAndPassword(user.Password, data.Password); err != nil {
 		Log("info", "could not login: incorrect password")
 		return c.JSON(http.StatusBadRequest, "incorrect password")
 	}

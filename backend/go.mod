@@ -13,8 +13,10 @@ replace lms/controllers => ./controllers
 require (
 	github.com/joho/godotenv v1.4.0
 	github.com/labstack/echo v3.3.10+incompatible
+	gorm.io/driver/postgres v1.4.6
 	gorm.io/gorm v1.24.3
 	lms/controllers v0.0.0-00010101000000-000000000000
+	lms/db v0.0.0-00010101000000-000000000000
 	lms/utils v0.0.0-00010101000000-000000000000
 )
 
@@ -35,7 +37,5 @@ require (
 	golang.org/x/net v0.3.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
-	gorm.io/driver/postgres v1.4.6 // indirect
-	lms/db v0.0.0-00010101000000-000000000000 // indirect
 	lms/db/models v0.0.0-00010101000000-000000000000 // indirect
 )
