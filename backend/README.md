@@ -18,3 +18,21 @@ Type `air` command at project root directory.
 ## Migrating
 
 Migrations will start automatically if env variable `MIGRATE` is set to `true`.
+
+## API
+
+**USERS GROUP**
+
+`POST` */api/users/register*
+
+`POST` */api/users/login*
+
+`POST` */api/users/logout*
+
+`GET` */api/users/get-user*
+
+**BOOKS GROUP**
+
+`GET` */api/books/get-book*
+
+`POST` */api/users/add-book*

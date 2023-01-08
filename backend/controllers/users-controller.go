@@ -16,18 +16,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const dbContextKey = "__db" // just for dbMiddleware use. See below
-
-// Middleware for echo package to pass the database into API endpoints' handlers
-func dbMiddleware(db *gorm.DB) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Set(dbContextKey, db)
-			return next(c)
-		}
-	}
-}
-
 func AttachUsersController(g *echo.Group, db *gorm.DB) {
 
 	Log("info", "Attaching USERS controller.")
@@ -44,14 +32,14 @@ func handleGetUser(c echo.Context) error {
 	database := c.Get(dbContextKey).(*gorm.DB)
 	cookie, _ := c.Cookie("jwt")
 	if cookie == nil {
-		Log("error", "Can't get user: unauthenticated (no cookie set)")
+		Log("debug", "Can't get user: unauthenticated (no cookie set)")
 		return c.JSON(http.StatusUnauthorized, "unauthenticated")
 	}
 	token, err := jwt.ParseWithClaims(cookie.Value, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
 	})
 	if err != nil {
-		Log("error", "Can't get user: unauthenticated (cookie doesn't match)")
+		Log("degub", "Can't get user: unauthenticated (cookie doesn't match)")
 		return c.JSON(http.StatusUnauthorized, "unauthenticated")
 	}
 
@@ -71,11 +59,21 @@ func handleRegister(c echo.Context) error {
 	user := new(models.User)
 	json.NewDecoder(c.Request().Body).Decode(&user)
 
-	password, _ := bcrypt.GenerateFromPassword(user.Password, 14)
+	if len(string(user.Password)) < 8 {
+		return c.JSON(http.StatusBadRequest, "password is too short")
+	}
+	if user.Name == "" || user.Surname == "" || user.Email == "" { //TODO - make validator via echo.validate
+		return c.JSON(http.StatusBadRequest, "not enough data")
+	}
 
-	user.Password = password
+	password, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
+
+	user.Password = string(password)
 
 	database.Create(&user)
+	if user.ID == 0 {
+		return c.JSON(http.StatusConflict, "user already exists")
+	}
 
 	Log("debug", "Registered new user")
 	return c.JSON(http.StatusOK, user)
@@ -94,7 +92,7 @@ func handleLogin(c echo.Context) error {
 		Log("info", "could not login: user not found")
 		return c.JSON(http.StatusNotFound, "user not found")
 	}
-	if err := bcrypt.CompareHashAndPassword(user.Password, data.Password); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
 		Log("info", "could not login: incorrect password")
 		return c.JSON(http.StatusBadRequest, "incorrect password")
 	}
