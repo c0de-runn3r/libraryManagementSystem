@@ -1,8 +1,8 @@
 package db
 
 import (
-	. "lms/db/models"
-	. "lms/utils"
+	. "github.com/c0de-runn3r/libraryManagementSystem/db/models"
+	. "github.com/c0de-runn3r/libraryManagementSystem/utils"
 
 	"os"
 

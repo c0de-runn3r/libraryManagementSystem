@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	. "lms/controllers"
-	. "lms/db"
-	. "lms/utils"
+	. "github.com/c0de-runn3r/libraryManagementSystem/controllers"
+	. "github.com/c0de-runn3r/libraryManagementSystem/db"
+	. "github.com/c0de-runn3r/libraryManagementSystem/utils"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo"

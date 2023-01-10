@@ -2,13 +2,16 @@ package controllers
 
 import (
 	"encoding/json"
-	. "lms/utils"
+	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"lms/db/models"
+	. "github.com/c0de-runn3r/libraryManagementSystem/utils"
+
+	"github.com/c0de-runn3r/libraryManagementSystem/db/models"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo"
@@ -24,30 +27,18 @@ func AttachUsersController(g *echo.Group, db *gorm.DB) {
 
 	g.GET("/get-user", handleGetUser)
 	g.POST("/register", handleRegister)
+	g.GET("/verifyemail/:code", handleVerifyEmail)
 	g.POST("/login", handleLogin)
 	g.POST("/logout", handleLogout)
-}
+} // TODO move all database interactios to db package
 
 func handleGetUser(c echo.Context) error {
 	database := c.Get(dbContextKey).(*gorm.DB)
-	cookie, _ := c.Cookie("jwt")
-	if cookie == nil {
-		Log("debug", "Can't get user: unauthenticated (no cookie set)")
-		return c.JSON(http.StatusUnauthorized, "unauthenticated")
-	}
-	token, err := jwt.ParseWithClaims(cookie.Value, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
-	})
+
+	user, err := GetUserByRequestContext(c, database)
 	if err != nil {
-		Log("degub", "Can't get user: unauthenticated (cookie doesn't match)")
-		return c.JSON(http.StatusUnauthorized, "unauthenticated")
+		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
-
-	claims := token.Claims.(*jwt.StandardClaims)
-
-	var user models.User
-
-	database.Where("id = ?", claims.Issuer).First(&user)
 
 	Log("debug", "Handled get user")
 	return c.JSON(http.StatusOK, user)
@@ -70,13 +61,44 @@ func handleRegister(c echo.Context) error {
 
 	user.Password = string(password)
 
+	user.VerificationCode = generateVerificationCode(30)
+
 	database.Create(&user)
 	if user.ID == 0 {
 		return c.JSON(http.StatusConflict, "user already exists")
 	}
 
+	err := SendVerificationCodeViaEmail(user.Email, user.VerificationCode)
+	if err != nil {
+		Log("error", fmt.Sprintf("error sending confirmation code via email: %e", err))
+		database.Delete(&user)
+		return c.JSON(http.StatusOK, "error sending confirmation code")
+	}
+
+	message := "We sent an email with a verification code to " + user.Email
 	Log("debug", "Registered new user")
-	return c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusOK, message)
+}
+
+func handleVerifyEmail(c echo.Context) error {
+	database := c.Get(dbContextKey).(*gorm.DB)
+
+	code := c.Param("code")
+
+	var user models.User
+
+	res := database.Where("verification_code = ?", code).First(&user)
+	if res.Error != nil {
+		return c.JSON(http.StatusForbidden, "invalid verification code or user doesn't exists")
+	}
+	if user.EmailVerified {
+		return c.JSON(http.StatusForbidden, "email already verified")
+	}
+
+	user.EmailVerified = true
+	database.Save(&user)
+
+	return c.JSON(http.StatusOK, "email verified successfully")
 }
 
 func handleLogin(c echo.Context) error {
@@ -129,4 +151,42 @@ func handleLogout(c echo.Context) error {
 	c.SetCookie(cookie)
 	Log("debug", "User logout")
 	return c.JSON(http.StatusOK, "success")
+}
+
+func getIDbyJWT(JWtoken string) (string, error) {
+	token, err := jwt.ParseWithClaims(JWtoken, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET_KEY")), nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)
+	return claims.Issuer, nil
+}
+
+func GetUserByRequestContext(c echo.Context, database *gorm.DB) (models.UserResponse, error) {
+	var user models.UserResponse
+	cookie, _ := c.Cookie("jwt")
+	if cookie == nil {
+		Log("debug", "Can't get user: unauthenticated (no cookie set)")
+		return user, fmt.Errorf("unauthenticated")
+	}
+	id, err := getIDbyJWT(cookie.Value)
+	if err != nil {
+		Log("debug", "Can't get user: unauthenticated (cookie doesn't match)")
+		return user, fmt.Errorf("unauthenticated")
+	}
+	database.Where("id = ?", id).First(&user)
+	return user, nil
+}
+
+func generateVerificationCode(length int) string {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + "abcdefghijklmnopqrstuvwxyz"
+	var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
 }

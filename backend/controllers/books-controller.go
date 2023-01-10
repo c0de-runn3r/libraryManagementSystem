@@ -2,9 +2,10 @@ package controllers
 
 import (
 	"encoding/json"
-	"lms/db/models"
-	. "lms/utils"
 	"net/http"
+
+	"github.com/c0de-runn3r/libraryManagementSystem/db/models"
+	. "github.com/c0de-runn3r/libraryManagementSystem/utils"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -22,6 +23,14 @@ func AttachBooksController(g *echo.Group, db *gorm.DB) {
 
 func handleAddBook(c echo.Context) error {
 	database := c.Get(dbContextKey).(*gorm.DB)
+
+	user, err := GetUserByRequestContext(c, database)
+	if err != nil {
+		return c.JSON(http.StatusForbidden, err.Error())
+	}
+	if user.Role != models.Librarian && user.Role != models.Manager {
+		return c.JSON(http.StatusForbidden, "you have no roots to preform this request")
+	}
 
 	newBook := new(models.Book)
 	json.NewDecoder(c.Request().Body).Decode(&newBook)
