@@ -28,6 +28,11 @@ func Migrate(db *gorm.DB) {
 		Log("error", "Author migration error.\n"+err.Error())
 		os.Exit(1)
 	}
+	err = db.AutoMigrate(&BookLog{})
+	if err != nil {
+		Log("error", "User migration error.\n"+err.Error())
+		os.Exit(1)
+	}
 
 	Log("info", "Auto migration compleate.")
 

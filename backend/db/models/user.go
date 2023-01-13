@@ -11,14 +11,14 @@ type User struct {
 	Password         string `gorm:"not null" json:"password"`
 	VerificationCode string `json:"verificationCode"`
 	EmailVerified    bool   `json:"verified"`
-	Role             string `json:"role"`
+	Role             Role   `json:"role"`
 	gorm.Model
 }
 
 type UserResponse struct {
-	Name          string `json:"name,omitempty"`
-	Surname       string `json:"surname,omitempty"`
-	Email         string `json:"email,omitempty"`
+	Name          string `json:"name"`
+	Surname       string `json:"surname"`
+	Email         string `json:"email"`
 	EmailVerified bool   `json:"verified"`
 	Role          Role   `json:"role"`
 }

@@ -19,6 +19,9 @@ func AttachBooksController(g *echo.Group, db *gorm.DB) {
 
 	g.POST("/add-book", handleAddBook)
 	g.GET("/get-book", handleGetBook)
+
+	g.POST("/take-book", handleTakeBook)
+	g.POST("/return-book", handleReturnBook)
 }
 
 func handleAddBook(c echo.Context) error {

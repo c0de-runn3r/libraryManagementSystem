@@ -39,9 +39,16 @@ func handleGetUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
+	userResp := models.UserResponse{
+		Name:          user.Name,
+		Surname:       user.Surname,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+		Role:          user.Role,
+	}
 
 	Log("debug", "Handled get user")
-	return c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusOK, userResp)
 }
 
 func handleRegister(c echo.Context) error {
@@ -68,12 +75,12 @@ func handleRegister(c echo.Context) error {
 		return c.JSON(http.StatusConflict, "user already exists")
 	}
 
-	err := SendVerificationCodeViaEmail(user.Email, user.VerificationCode)
-	if err != nil {
-		Log("error", fmt.Sprintf("error sending confirmation code via email: %e", err))
-		database.Delete(&user)
-		return c.JSON(http.StatusOK, "error sending confirmation code")
-	}
+	// err := SendVerificationCodeViaEmail(user.Email, user.VerificationCode)
+	// if err != nil {
+	// 	Log("error", fmt.Sprintf("error sending confirmation code via email: %e", err))
+	// 	database.Delete(&user)
+	// 	return c.JSON(http.StatusOK, "error sending confirmation code")
+	// }
 
 	message := "We sent an email with a verification code to " + user.Email
 	Log("debug", "Registered new user")
@@ -165,8 +172,8 @@ func getIDbyJWT(JWtoken string) (string, error) {
 	return claims.Issuer, nil
 }
 
-func GetUserByRequestContext(c echo.Context, database *gorm.DB) (models.UserResponse, error) {
-	var user models.UserResponse
+func GetUserByRequestContext(c echo.Context, database *gorm.DB) (models.User, error) {
+	var user models.User
 	cookie, _ := c.Cookie("jwt")
 	if cookie == nil {
 		Log("debug", "Can't get user: unauthenticated (no cookie set)")
@@ -177,7 +184,7 @@ func GetUserByRequestContext(c echo.Context, database *gorm.DB) (models.UserResp
 		Log("debug", "Can't get user: unauthenticated (cookie doesn't match)")
 		return user, fmt.Errorf("unauthenticated")
 	}
-	database.Where("id = ?", id).First(&user)
+	database.Table("users").Where("id = ?", id).First(&user)
 	return user, nil
 }
 

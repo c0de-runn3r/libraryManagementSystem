@@ -13,5 +13,6 @@ type Book struct {
 	ISBN      string    `json:"isbn"`
 	UDKNumber string    `json:"udk_number"`
 	PageCount int       `json:"page_count"`
+	Avialable bool      `gorm:"default:true" json:"avialable"`
 	gorm.Model
 }
