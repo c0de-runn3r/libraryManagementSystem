@@ -29,7 +29,6 @@ func main() {
 	sqlDNS := os.Getenv("SQL_DNS")
 
 	db, err := gorm.Open(postgres.Open(sqlDNS), &gorm.Config{})
-
 	if err != nil {
 		Log("error", "Can't Connect to database.\n"+err.Error())
 		os.Exit(1)
@@ -46,6 +45,11 @@ func main() {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{AllowCredentials: true}))
 
 	apiGroup := e.Group("/api")
+
+	apiGroup.Use(DBMiddleware(db))
+
+	apiGroup.POST("/register", HandleRegister)
+	apiGroup.POST("/login", HandleLogin)
 
 	usersGroup := apiGroup.Group("/users")
 	booksGroup := apiGroup.Group("/books")

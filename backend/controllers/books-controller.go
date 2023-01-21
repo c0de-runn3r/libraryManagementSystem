@@ -15,8 +15,6 @@ func AttachBooksController(g *echo.Group, db *gorm.DB) {
 
 	Log("info", "Attaching BOOKS controller.")
 
-	g.Use(dbMiddleware(db))
-
 	g.POST("/add-book", handleAddBook)
 	g.GET("/get-book", handleGetBook)
 

@@ -7,11 +7,11 @@ import (
 type User struct {
 	Name             string `json:"name"`
 	Surname          string `json:"surname"`
-	Email            string `gorm:"not null;unique" json:"email"`
-	Password         string `gorm:"not null" json:"password"`
+	Email            string `json:"email" gorm:"not null;unique"`
+	Password         string `json:"password" gorm:"not null"`
 	VerificationCode string `json:"verificationCode"`
 	EmailVerified    bool   `json:"verified"`
-	Role             Role   `json:"role"`
+	Role             Role   `json:"role" gorm:"default:1"`
 	gorm.Model
 }
 
