@@ -5,7 +5,9 @@ import (
 
 	. "github.com/c0de-runn3r/libraryManagementSystem/controllers"
 	. "github.com/c0de-runn3r/libraryManagementSystem/db"
+	"github.com/c0de-runn3r/libraryManagementSystem/db/models"
 	. "github.com/c0de-runn3r/libraryManagementSystem/utils"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo"
@@ -48,7 +50,6 @@ func main() {
 
 	apiGroup.Use(DBMiddleware(db))
 
-	apiGroup.POST("/register", HandleRegister)
 	apiGroup.POST("/login", HandleLogin)
 
 	usersGroup := apiGroup.Group("/users")
@@ -56,6 +57,10 @@ func main() {
 
 	AttachUsersController(usersGroup, db)
 	AttachBooksController(booksGroup, db)
+
+	// FOR TESTING PURPOSES: DELETE BEFORE REAL USE
+	pswrd, _ := bcrypt.GenerateFromPassword([]byte("admin"), 14)
+	db.Where(models.User{Name: "admin", Surname: "admin", Email: "admin@admin", Password: string(pswrd), EmailVerified: true, Role: models.Admin}).FirstOrInit(&models.User{})
 
 	Log("error", e.Start(":"+os.Getenv("LMS_BACKEND_PORT")).Error())
 

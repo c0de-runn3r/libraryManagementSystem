@@ -22,18 +22,32 @@ func AttachUsersController(g *echo.Group, db *gorm.DB) {
 
 	Log("info", "Attaching USERS controller.")
 
-	g.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		Skipper:      Skipper,
-		Claims:       &jwt.StandardClaims{},
-		SigningKey:   []byte(GetJWTSecret()),
-		TokenLookup:  "cookie:jwt", // "<source>:<name>"
-		ErrorHandler: middleware.JWTErrorHandler(JWTErrorChecker),
-	}))
+	g.Use(middleware.JWTWithConfig(JWTMiddlewareCustomConfig))
 
+	g.POST("/register", handleAddNewUser)
 	g.GET("/get-user", handleGetUser)
 	g.GET("/get-all-users", handleGetAllUsers)
 	g.GET("/verifyemail/:code", handleVerifyEmail)
 	g.POST("/logout", handleLogout)
+}
+
+func handleAddNewUser(c echo.Context) error {
+	database := c.Get(dbContextKey).(*gorm.DB)
+
+	user := new(models.User)
+	json.NewDecoder(c.Request().Body).Decode(&user)
+
+	if user.Name == "" || user.Surname == "" { //TODO - make validator via echo.validate
+		return c.JSON(http.StatusBadRequest, "not enough data")
+	}
+
+	database.Create(&user)
+	if user.ID == 0 {
+		return c.JSON(http.StatusConflict, "user already exists")
+	}
+
+	Log("debug", "Registered new user")
+	return c.JSON(http.StatusOK, "user succesfully registered")
 }
 
 func handleGetUser(c echo.Context) error {
@@ -61,7 +75,7 @@ func handleGetAllUsers(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusForbidden, err.Error())
 	}
-	if user.Role != models.Librarian && user.Role != models.Manager {
+	if user.Role != models.Admin {
 		return c.JSON(http.StatusForbidden, "you have no roots to preform this request")
 	}
 

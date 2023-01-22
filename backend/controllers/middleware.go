@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"gorm.io/gorm"
 )
 
@@ -15,4 +17,14 @@ func DBMiddleware(db *gorm.DB) echo.MiddlewareFunc {
 			return next(c)
 		}
 	}
+}
+
+// Config for JWT middleware
+
+var JWTMiddlewareCustomConfig = middleware.JWTConfig{
+	Skipper:      Skipper,
+	Claims:       &jwt.StandardClaims{},
+	SigningKey:   []byte(GetJWTSecret()),
+	TokenLookup:  "cookie:jwt", // "<source>:<name>"
+	ErrorHandler: middleware.JWTErrorHandler(JWTErrorChecker),
 }

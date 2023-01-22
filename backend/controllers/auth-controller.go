@@ -17,25 +17,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func HandleRegister(c echo.Context) error {
-	database := c.Get(dbContextKey).(*gorm.DB)
-
-	user := new(models.User)
-	json.NewDecoder(c.Request().Body).Decode(&user)
-
-	if user.Name == "" || user.Surname == "" { //TODO - make validator via echo.validate
-		return c.JSON(http.StatusBadRequest, "not enough data")
-	}
-
-	database.Create(&user)
-	if user.ID == 0 {
-		return c.JSON(http.StatusConflict, "user already exists")
-	}
-
-	Log("debug", "Registered new user")
-	return c.JSON(http.StatusOK, "user succesfully registered")
-}
-
 func HandleLogin(c echo.Context) error {
 	database := c.Get(dbContextKey).(*gorm.DB)
 

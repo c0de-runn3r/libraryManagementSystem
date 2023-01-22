@@ -8,12 +8,15 @@ import (
 	. "github.com/c0de-runn3r/libraryManagementSystem/utils"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"gorm.io/gorm"
 )
 
 func AttachBooksController(g *echo.Group, db *gorm.DB) {
 
 	Log("info", "Attaching BOOKS controller.")
+
+	g.Use(middleware.JWTWithConfig(JWTMiddlewareCustomConfig))
 
 	g.POST("/add-book", handleAddBook)
 	g.GET("/get-book", handleGetBook)
@@ -29,7 +32,7 @@ func handleAddBook(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusForbidden, err.Error())
 	}
-	if user.Role != models.Librarian && user.Role != models.Manager {
+	if user.Role != models.Admin {
 		return c.JSON(http.StatusForbidden, "you have no roots to preform this request")
 	}
 

@@ -11,7 +11,7 @@ type User struct {
 	Password         string `json:"password" gorm:"not null"`
 	VerificationCode string `json:"verificationCode"`
 	EmailVerified    bool   `json:"verified"`
-	Role             Role   `json:"role" gorm:"default:1"`
+	Role             Role   `json:"role" gorm:"default:0"`
 	gorm.Model
 }
 
@@ -26,13 +26,11 @@ type UserResponse struct {
 type Role int
 
 const (
-	Guest          Role = iota // 0
-	RegisteredUser             // 1
-	Librarian                  // 2
-	Manager                    // 3
+	Guest = iota
+	Admin
 )
 
-var RoleLevelStrings = []string{"[Guest]", "[RegisteredUser]", "[Librarian]", "[Manager]"}
+var RoleLevelStrings = []string{"[Guest]", "[Admin]"}
 
 func (r Role) String() string {
 	return RoleLevelStrings[r]
