@@ -20,7 +20,6 @@ func DBMiddleware(db *gorm.DB) echo.MiddlewareFunc {
 }
 
 // Config for JWT middleware
-
 var JWTMiddlewareCustomConfig = middleware.JWTConfig{
 	Skipper:      Skipper,
 	Claims:       &jwt.StandardClaims{},

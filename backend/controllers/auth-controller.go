@@ -20,23 +20,23 @@ import (
 func HandleLogin(c echo.Context) error {
 	database := c.Get(dbContextKey).(*gorm.DB)
 
-	data := new(models.User)
+	data := new(models.Admin)
 	json.NewDecoder(c.Request().Body).Decode(&data)
 
-	user := new(models.User)
+	admin := new(models.Admin)
 
-	database.Where("email = ?", data.Email).First(&user)
-	if user.ID == 0 { //If the ID return is '0' then there is no such email present in the DB
+	database.Where("email = ?", data.Email).First(&admin)
+	if admin.ID == 0 { //If the ID return is '0' then there is no such email present in the DB
 		Log("info", "could not login: user not found")
 		return c.JSON(http.StatusNotFound, "user not found")
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(data.Password)); err != nil {
 		Log("info", "could not login: incorrect password")
 		return c.JSON(http.StatusBadRequest, "incorrect password")
 	}
 
 	expTime := time.Now().Add(time.Hour * 24)
-	token, err := GenerateToken(user, expTime, []byte(GetJWTSecret()))
+	token, err := GenerateToken(admin, expTime, []byte(GetJWTSecret()))
 	if err != nil {
 		Log("error", fmt.Sprintln("could not generate jwt token: %w", err))
 		return c.JSON(http.StatusInternalServerError, "could not login")
@@ -47,13 +47,24 @@ func HandleLogin(c echo.Context) error {
 	return c.JSON(http.StatusOK, "success")
 }
 
+func HandleLogout(c echo.Context) error {
+	cookie := new(http.Cookie)
+	cookie.Name = "jwt"
+	cookie.Value = ""
+	cookie.Expires = time.Now().Add(-time.Hour)
+	cookie.HttpOnly = true
+	c.SetCookie(cookie)
+	Log("debug", "User logout")
+	return c.JSON(http.StatusOK, "success")
+}
+
 func GetJWTSecret() string {
 	return os.Getenv("JWT_SECRET_KEY")
 }
 
-func GenerateToken(user *models.User, expTime time.Time, secret []byte) (string, error) {
+func GenerateToken(admin *models.Admin, expTime time.Time, secret []byte) (string, error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Issuer:    strconv.Itoa(int(user.ID)),
+		Issuer:    strconv.Itoa(int(admin.ID)),
 		ExpiresAt: expTime.Unix(),
 	})
 
@@ -75,7 +86,7 @@ func SetTokenCookie(token string, expTime time.Time, c echo.Context) {
 
 func Skipper(c echo.Context) bool {
 	database := c.Get(dbContextKey).(*gorm.DB)
-	var user models.User
+	var admin models.Admin
 	cookie, _ := c.Cookie("jwt")
 	if cookie == nil {
 		return false
@@ -84,8 +95,8 @@ func Skipper(c echo.Context) bool {
 	if err != nil {
 		return false
 	}
-	database.Table("users").Where("id = ?", id).First(&user)
-	if user.ID == 0 {
+	database.Table("admins").Where("id = ?", id).First(&admin)
+	if admin.ID == 0 {
 		return false
 	}
 
