@@ -10,6 +10,13 @@ type Admin struct {
 	gorm.Model
 }
 
+type AdminResponce struct {
+	Name  string `json:"name"`
+	Email string `json:"email" gorm:"not null;unique"`
+	Level Level  `json:"level" gorm:"default:0"`
+	gorm.Model
+}
+
 type Level int
 
 const (

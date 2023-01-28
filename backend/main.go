@@ -45,13 +45,12 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{AllowCredentials: true}))
-
+	e.Use(DBMiddleware(db))
 	e.POST("/login", HandleLogin)
 	e.POST("/logout", HandleLogout)
 
 	apiGroup := e.Group("/api")
 
-	apiGroup.Use(DBMiddleware(db))
 	apiGroup.Use(middleware.JWTWithConfig(JWTMiddlewareCustomConfig))
 
 	usersGroup := apiGroup.Group("/users")
@@ -62,10 +61,10 @@ func main() {
 	AttachBooksController(booksGroup, db)
 	AttachAdminsController(adminsGroup, db)
 
-	// FOR TESTING PURPOSES: DELETE BEFORE REAL USE
-	pswrd, _ := bcrypt.GenerateFromPassword([]byte("admin"), 14)
-	db.Where(models.Admin{Name: "admin", Email: "admin@admin", Password: string(pswrd), Level: models.Administrator}).FirstOrInit(&models.User{})
+	{ // FOR TESTING PURPOSES: DELETE BEFORE REAL USE
+		pswrd, _ := bcrypt.GenerateFromPassword([]byte("admin"), 14)
+		db.Where(models.Admin{Name: "admin", Email: "admin@admin", Password: string(pswrd), Level: models.Administrator}).FirstOrCreate(&models.Admin{})
+	}
 
 	Log("error", e.Start(":"+os.Getenv("LMS_BACKEND_PORT")).Error())
-
 }

@@ -43,8 +43,8 @@ func getIDbyJWT(JWtoken string) (string, error) {
 	return claims.Issuer, nil
 }
 
-func GetAdminByRequestContext(c echo.Context, database *gorm.DB) (models.Admin, error) {
-	var admin models.Admin
+func GetAdminByRequestContext(c echo.Context, database *gorm.DB) (models.AdminResponce, error) {
+	var admin models.AdminResponce
 	cookie, _ := c.Cookie("jwt")
 	if cookie == nil {
 		Log("debug", "Can't get admin: unauthenticated (no cookie set)")
